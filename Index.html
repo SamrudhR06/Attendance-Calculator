@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Attendance Calculator</title>
+
+  <!-- Linking CSS file for styling -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Main container for the whole app -->
+  <div class="container">
+
+    <!-- Title of the app -->
+    <h1>Attendance Calculator</h1>
+
+    <!-- Input Box 1: Classes Attended -->
+    <div class="input-group">
+      <label for="attended">Classes Attended:</label>
+      <input type="text" id="attended" placeholder="Enter classes attended">
+    </div>
+
+    <!-- Input Box 2: Total Classes Conducted -->
+    <div class="input-group">
+      <label for="total">Total Classes Conducted:</label>
+      <input type="text" id="total" placeholder="Enter total classes conducted">
+    </div>
+
+    <!-- Input Box 3: Minimum Required Attendance % (criteria) -->
+    <div class="input-group">
+      <label for="required">Minimum Attendance % Required:</label>
+      <input type="text" id="required" placeholder="Enter required attendance %">
+    </div>
+
+    <!-- Calculate button -> will trigger calculation logic in Module 3/4 -->
+    <button id="calculateBtn">Calculate</button>
+
+    <!-- Reset button -> will clear everything, logic added in a later module -->
+    <button id="resetBtn">Reset</button>
+
+    <!-- Result area: -->
+    <div id="result" class="result"></div>
+
+  </div>
+
+  <!-- Linking our JavaScript file -->
+  <script src="script.js"></script>
+</body>
+</html>
