@@ -24,16 +24,59 @@ calculateBtn.addEventListener("click", function () {
 
   // Step 6: Round off the result (Ex: 89.47512 -> 89)
   const roundedPercentage = Math.round(attendancePercentage);
+  
+  // Skip / Must-Attend Calculator
 
-  // Step 7: Display the calculated attendance % in the result section
+  let extraMessage = "";
+
+  if (attendancePercentage >= required) {
+
+    // SAFE TO SKIP: keep increasing total classes (simulating skipped classes)
+    // while attended stays the same, using PRECISE values throughout
+    let simulatedAttended = attended;
+    let simulatedTotal = total;
+    let skipCount = 0;
+
+    // Keep skipping as long as the PRECISE percentage stays >= required
+    while (((simulatedAttended / (simulatedTotal + 1)) * 100) >= required) {
+      simulatedTotal = simulatedTotal + 1;
+      skipCount = skipCount + 1;
+    }
+
+    extraMessage = "You can skip " + skipCount + " more class(es) and still maintain " + required + "% attendance.";
+
+  } else {
+
+    // NOT SAFE: keep increasing both attended and total (simulating attending classes)
+    // using PRECISE values throughout
+    let simulatedAttended = attended;
+    let simulatedTotal = total;
+    let mustAttendCount = 0;
+
+    // Keep attending as long as the PRECISE percentage stays below required
+    while (((simulatedAttended + 1) / (simulatedTotal + 1)) * 100 < required) {
+      simulatedAttended = simulatedAttended + 1;
+      simulatedTotal = simulatedTotal + 1;
+      mustAttendCount = mustAttendCount + 1;
+    }
+
+    // Add the one final class that pushes it to meet/exceed the required %
+    mustAttendCount = mustAttendCount + 1;
+
+    extraMessage = "You must attend " + mustAttendCount + " class(es) in a row to reach " + required + "% attendance.";
+
+  }
+
+  // Step 7: Display the calculated attendance % and extra message in the result section
   resultDiv.textContent = "Your current attendance is: " + roundedPercentage + 
-  "% | Required: " + required + "%";
+  "% | Required: " + required + "% | " + extraMessage;
 
   // (Keeping this for debugging reference)
   console.log("Attended:", attended);
   console.log("Total:", total);
   console.log("Required %:", required);
   console.log("Calculated Attendance %:", roundedPercentage);
+  console.log(extraMessage);
   
 });
 
