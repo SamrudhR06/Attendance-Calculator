@@ -5,192 +5,161 @@ const totalInput = document.getElementById("total");
 const requiredInput = document.getElementById("required");
 const resultDiv = document.getElementById("result");
 
+// Show result messages with suitable styling
+function showResult(message, type) {
+  resultDiv.textContent = message;
+  resultDiv.className = "result";
+
+  if (type) {
+    resultDiv.classList.add(type);
+  }
+}
+
 // Step 2: Detect the button click
 calculateBtn.addEventListener("click", function () {
 
-  // Step 3: Read the values entered by the user (these are TEXT/strings)
-  // .trim() removes leading/trailing whitespace so "   " counts as blank
+  // Step 3: Read the values entered by the user
   const attendedValue = attendedInput.value.trim();
   const totalValue = totalInput.value.trim();
   const requiredValue = requiredInput.value.trim();
 
-  /*
-    ------------------------------------------------
-    VALIDATION BLOCK
-    ------------------------------------------------
-  */
-
-  // Check 1: Blank / whitespace-only input boxes
+  // Check 1: Blank input boxes
   if (attendedValue === "" || totalValue === "" || requiredValue === "") {
-    resultDiv.textContent = "Error: Please fill in all fields.";
+    showResult("Please fill in all fields.", "error");
     return;
   }
 
-  // Convert to numbers to we can validate them properly
+  // Convert values into numbers
   const attended = Number(attendedValue);
   const total = Number(totalValue);
   const required = Number(requiredValue);
 
-  // Check 2: Non-numeric input (e.g., letters, symbols) -> Number() gives NaN
+  // Check 2: Non-numeric input
   if (isNaN(attended) || isNaN(total) || isNaN(required)) {
-    resultDiv.textContent = "Error: Please enter valid numbers only.";
+    showResult("Please enter valid numbers only.", "error");
     return;
   }
 
   // Check 3: Negative numbers
   if (attended < 0 || total < 0 || required < 0) {
-    resultDiv.textContent = "Error: Negative numbers are not allowed.";
+    showResult("Negative numbers are not allowed.", "error");
     return;
   }
 
-  // Check 4: Decimal values for attended/total (these should be whole numbers)
+  // Check 4: Decimal values for attended/total
   if (!Number.isInteger(attended) || !Number.isInteger(total)) {
-    resultDiv.textContent = "Error: Classes attended and total classes must be whole numbers.";
+    showResult("Classes attended and total classes must be whole numbers.", "error");
     return;
   }
 
-  // Check 5: Total classes = 0 (avoids division by zero)
+  // Check 5: Total classes cannot be zero
   if (total === 0) {
-    resultDiv.textContent = "Error: Total classes conducted cannot be zero.";
+    showResult("Total classes conducted cannot be zero.", "error");
     return;
   }
 
-  // Check 6: Attended greater than total
+  // Check 6: Attended cannot exceed total classes
   if (attended > total) {
-    resultDiv.textContent = "Error: Classes attended cannot be greater than total classes.";
+    showResult("Classes attended cannot be greater than total classes.", "error");
     return;
   }
 
-  // Check 7: Required % out of realistic range (0-100)
-  if (required < 0 || required > 100) {
-    resultDiv.textContent = "Error: Required attendance % must be between 0 and 100.";
+  // Check 7: Required percentage range
+  if (required > 100) {
+    showResult("Required attendance % must be between 0 and 100.", "error");
     return;
   }
 
-  /*
-    ------------------------------------------------
-    All validations passed - proceed with calculation
-    ------------------------------------------------
-  */
-
-  // Step 5: Apply the formula -> Attendance % = (Attended / Total) * 100
+  // Calculate attendance percentage
   const attendancePercentage = (attended / total) * 100;
-
-  // Step 6: Round off the result (Ex: 89.47512 -> 89)
   const roundedPercentage = Math.round(attendancePercentage);
-
-  /*
-    Module 5: Skip / Must-Attend Calculator
-    ------------------------------------------------
-    This section calculates how many more classes a student can skip or must attend
-  */
 
   let extraMessage = "";
 
+  // Attendance is safe
   if (attendancePercentage >= required) {
 
-    // SAFE TO SKIP: keep increasing total classes (simulating skipped classes)
-    // while attended stays the same, using PRECISE values throughout
-    let simulatedAttended = attended;
-    let simulatedTotal = total;
-    let skipCount = 0;
+    if (required === 0) {
+      extraMessage = "You can skip any number of classes and still maintain 0% attendance.";
+    } else {
+      let simulatedAttended = attended;
+      let simulatedTotal = total;
+      let skipCount = 0;
 
-    // Keep skipping as long as the PRECISE percentage stays >= required
-    while (((simulatedAttended / (simulatedTotal + 1)) * 100) >= required) {
-      simulatedTotal = simulatedTotal + 1;
-      skipCount = skipCount + 1;
+      while (((simulatedAttended / (simulatedTotal + 1)) * 100) >= required) {
+        simulatedTotal = simulatedTotal + 1;
+        skipCount = skipCount + 1;
+      }
+
+      extraMessage = "You can skip " + skipCount +
+        " more class(es) and still maintain " + required + "% attendance.";
     }
 
-    extraMessage = "You can skip " + skipCount + " more class(es) and still maintain " + required + "% attendance.";
+    showResult(
+      "Great! Your current attendance is " + roundedPercentage +
+      "%. Required: " + required + "%. " + extraMessage,
+      "safe"
+    );
 
   } else {
-
-    // NOT SAFE: keep increasing both attended and total (simulating attending classes)
-    // using PRECISE values throughout
     let simulatedAttended = attended;
     let simulatedTotal = total;
     let mustAttendCount = 0;
 
-    // Keep attending as long as the PRECISE percentage stays below required
     while (((simulatedAttended + 1) / (simulatedTotal + 1)) * 100 < required) {
       simulatedAttended = simulatedAttended + 1;
       simulatedTotal = simulatedTotal + 1;
       mustAttendCount = mustAttendCount + 1;
     }
 
-    // Add the one final class that pushes it to meet/exceed the required %
     mustAttendCount = mustAttendCount + 1;
 
-    extraMessage = "You must attend " + mustAttendCount + " class(es) in a row to reach " + required + "% attendance.";
+    extraMessage = "You must attend " + mustAttendCount +
+      " class(es) in a row to reach " + required + "% attendance.";
 
+    showResult(
+      "Your current attendance is " + roundedPercentage +
+      "%. Required: " + required + "%. " + extraMessage,
+      "below"
+    );
   }
 
-  // Step 7: Display the calculated attendance % and extra message in the result section
-  resultDiv.textContent = "Your current attendance is: " + roundedPercentage + 
-  "% | Required: " + required + "% | " + extraMessage;
-
-  // Module 6: Save the values to Local Storage after a successful calculation
+  // Save values to Local Storage
   localStorage.setItem("attended", attended);
   localStorage.setItem("total", total);
   localStorage.setItem("required", required);
-
-  // (Keeping this for debugging reference)
-  console.log("Attended:", attended);
-  console.log("Total:", total);
-  console.log("Required %:", required);
-  console.log("Calculated Attendance %:", roundedPercentage);
-  console.log(extraMessage);
-  
 });
 
 const resetBtn = document.getElementById("resetBtn");
 
 resetBtn.addEventListener("click", function () {
-
-  // Clear all three input boxes
   attendedInput.value = "";
   totalInput.value = "";
   requiredInput.value = "";
 
-  // Clear the result section
   resultDiv.textContent = "";
+  resultDiv.className = "result";
 
-  // Module 6: Also clear the saved data from Local Storage
-  // so the app returns to a true first-time/original state
   localStorage.removeItem("attended");
   localStorage.removeItem("total");
   localStorage.removeItem("required");
 
+  attendedInput.focus();
 });
 
-/*
-  Module 6: Load saved data when the page/website is opened
-  ------------------------------------------------
-*/
-
+// Load saved data when the page opens
 function loadSavedAttendance() {
-
-  // Try to get saved values from Local Storage
   const savedAttended = localStorage.getItem("attended");
   const savedTotal = localStorage.getItem("total");
   const savedRequired = localStorage.getItem("required");
 
-  // localStorage.getItem() returns null if the key doesn't exist
-  // So we only proceed if ALL three values were actually saved before
   if (savedAttended !== null && savedTotal !== null && savedRequired !== null) {
-
-    // Put the saved values into their respective input boxes
     attendedInput.value = savedAttended;
     totalInput.value = savedTotal;
     requiredInput.value = savedRequired;
 
-    // Automatically trigger a click on Calculate, so the result 
-    // is shown immediately without the user re-entering anything
     calculateBtn.click();
-
   }
-  // If no saved data found, do nothing - boxes remain empty (first-time use)
-
 }
 
 loadSavedAttendance();
