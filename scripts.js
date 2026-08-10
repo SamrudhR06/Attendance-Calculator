@@ -18,7 +18,6 @@ calculateBtn.addEventListener("click", function () {
     ------------------------------------------------
     VALIDATION BLOCK
     ------------------------------------------------
-    
   */
 
   // Check 1: Blank / whitespace-only input boxes
@@ -130,6 +129,11 @@ calculateBtn.addEventListener("click", function () {
   resultDiv.textContent = "Your current attendance is: " + roundedPercentage + 
   "% | Required: " + required + "% | " + extraMessage;
 
+  // Module 6: Save the values to Local Storage after a successful calculation
+  localStorage.setItem("attended", attended);
+  localStorage.setItem("total", total);
+  localStorage.setItem("required", required);
+
   // (Keeping this for debugging reference)
   console.log("Attended:", attended);
   console.log("Total:", total);
@@ -151,4 +155,42 @@ resetBtn.addEventListener("click", function () {
   // Clear the result section
   resultDiv.textContent = "";
 
+  // Module 6: Also clear the saved data from Local Storage
+  // so the app returns to a true first-time/original state
+  localStorage.removeItem("attended");
+  localStorage.removeItem("total");
+  localStorage.removeItem("required");
+
 });
+
+/*
+  Module 6: Load saved data when the page/website is opened
+  ------------------------------------------------
+*/
+
+function loadSavedAttendance() {
+
+  // Try to get saved values from Local Storage
+  const savedAttended = localStorage.getItem("attended");
+  const savedTotal = localStorage.getItem("total");
+  const savedRequired = localStorage.getItem("required");
+
+  // localStorage.getItem() returns null if the key doesn't exist
+  // So we only proceed if ALL three values were actually saved before
+  if (savedAttended !== null && savedTotal !== null && savedRequired !== null) {
+
+    // Put the saved values into their respective input boxes
+    attendedInput.value = savedAttended;
+    totalInput.value = savedTotal;
+    requiredInput.value = savedRequired;
+
+    // Automatically trigger a click on Calculate, so the result 
+    // is shown immediately without the user re-entering anything
+    calculateBtn.click();
+
+  }
+  // If no saved data found, do nothing - boxes remain empty (first-time use)
+
+}
+
+loadSavedAttendance();
