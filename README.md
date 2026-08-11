@@ -12,7 +12,7 @@ The application stores the user's attendance information in the browser using `l
 
 ## Live Demo
 
-**[Attendance Calculator]()**
+**[Attendance Calculator](https://samrudhr06.github.io/Attendance-Calculator/)**
 
 ## Features
 
